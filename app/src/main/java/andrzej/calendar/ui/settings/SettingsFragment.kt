@@ -1,15 +1,19 @@
 package andrzej.calendar.ui.settings
 
+import android.app.Activity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
+import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import andrzej.calendar.databinding.FragmentSettingsBinding
 import andrzej.calendar.model.User
-import andrzej.calendar.utils.UserStateEvent
+import andrzej.calendar.utils.DataState
 import dagger.hilt.android.AndroidEntryPoint
 
 
@@ -17,8 +21,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class SettingsFragment : Fragment() {
 
     private lateinit var binding: FragmentSettingsBinding
-    private lateinit var userStateEvent: UserStateEvent
-    private var isUserRegistered: Boolean = false
 
     private val viewModel: SettingsViewModel by viewModels()
 
@@ -33,50 +35,85 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-       // registerCheck()
+        subscribeObservers()
         setListener()
-
+        viewModel.getUser()
     }
 
-
-    private fun registerCheck(){
-        isUserRegistered =
-            if(viewModel.getCycleLength() == null || viewModel.getPeriodLength() == null){
-                Toast.makeText(
-                    context,
-                    "Musisz wprowadzić i zapisać dane",
-                    Toast.LENGTH_SHORT
-                ).show()
-                false
-            } else {
-                binding.textInputPeriodLength.setText(viewModel.getPeriodLength().toString())
-                binding.textInputCycleLength.setText(viewModel.getCycleLength().toString())
-                true
+    private fun subscribeObservers() {
+        viewModel.user.observe(viewLifecycleOwner, Observer { user ->
+            when(user){
+                is DataState.Success<User> -> {
+                    displayProgressBar(false)
+                    displayUserData(user.data)
+                }
+                is DataState.FirstUse -> {
+                    displayProgressBar(false)
+                    displayMessage()
+                }
+                is DataState.Loading -> {
+                    displayProgressBar(true)
+                }
             }
-
+        })
     }
 
+
+    private fun displayProgressBar(isDisplayed: Boolean){
+        binding.progressBar.visibility = if(isDisplayed) View.VISIBLE else View.GONE
+    }
+
+    private fun displayUserData(user: User){
+        binding.textInputPeriodLength.setText(user.periodLength)
+        binding.textInputCycleLength.setText(user.cycleLength)
+    }
+
+    private fun displayMessage(){
+        Toast.makeText(context,
+            "Wprowadź i zapisz dane",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
 
     private fun setListener(){
         binding.buttonSave.setOnClickListener {
-            if(binding.textInputPeriodLength.text.toString() == "" || binding.textInputCycleLength.text.toString() == ""){
+
+            if(binding.textInputCycleLength.text.toString() == "" || binding.textInputPeriodLength.text.toString() == ""){
+
                 Toast.makeText(context,
-                    "Musisz najpierw podać dane",
+                    "Musisz wprowadzić dane",
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnClickListener
-            }
-            userStateEvent = if(isUserRegistered)
-                UserStateEvent.UserRegisteredEvent
-            else
-                UserStateEvent.UserNotRegisteredEvent
 
-            viewModel.saveUser(userStateEvent, User(
-                1,
-                binding.textInputPeriodLength.text.toString(),
-                binding.textInputCycleLength.text.toString()
-            ))
+            } else {
+
+                viewModel.saveUser(User(
+                    userId = 1,
+                    periodLength = binding.textInputPeriodLength.text.toString(),
+                    cycleLength = binding.textInputCycleLength.text.toString()
+                ))
+
+                Toast.makeText(context,
+                    "Zapisano dane",
+                    Toast.LENGTH_SHORT
+                ).show()
+                hideKeyboard(activity)
+            }
+
         }
+    }
+
+    private fun hideKeyboard(activity: FragmentActivity?){
+
+        if(activity == null)
+            return
+        val imm = activity.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        var view = activity.currentFocus
+        if(view == null)
+            view = View(activity)
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
+
     }
 
 

@@ -5,11 +5,8 @@ import androidx.room.*
 @Dao
 interface UserDao {
 
-    @Query("SELECT period_length FROM user WHERE id = 1")
-    suspend fun getPeriodLength(): String
-
-    @Query("SELECT cycle_length FROM user WHERE id = 1")
-    suspend fun getCycleLength(): String
+    @Query("SELECT * FROM user WHERE id = '1'")
+    suspend fun getUser(): UserEntity
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(userEntity: UserEntity)

@@ -22,6 +22,7 @@ abstract class UserDataBase: RoomDatabase() {
                     "user_database"
                 )
                     .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration()
                     .build()
             }
             return dbInstance!!
