@@ -12,7 +12,7 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import andrzej.calendar.databinding.FragmentSettingsBinding
-import andrzej.calendar.model.User
+import andrzej.calendar.room.user.User
 import andrzej.calendar.utils.DataState
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -20,15 +20,17 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
 
-    private lateinit var binding: FragmentSettingsBinding
+    private var _binding: FragmentSettingsBinding? = null
+    private val binding get() = _binding!!
 
     private val viewModel: SettingsViewModel by viewModels()
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        binding = FragmentSettingsBinding.inflate(inflater, container, false)
+        _binding = FragmentSettingsBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -40,6 +42,11 @@ class SettingsFragment : Fragment() {
         viewModel.getUser()
     }
 
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
+    }
+
     private fun subscribeObservers() {
         viewModel.user.observe(viewLifecycleOwner, Observer { user ->
             when(user){
@@ -47,13 +54,14 @@ class SettingsFragment : Fragment() {
                     displayProgressBar(false)
                     displayUserData(user.data)
                 }
-                is DataState.FirstUse -> {
+                is DataState.Error -> {
                     displayProgressBar(false)
                     displayMessage()
                 }
                 is DataState.Loading -> {
                     displayProgressBar(true)
                 }
+                else -> {}
             }
         })
     }
@@ -78,7 +86,7 @@ class SettingsFragment : Fragment() {
     private fun setListener(){
         binding.buttonSave.setOnClickListener {
 
-            if(binding.textInputCycleLength.text.toString() == "" || binding.textInputPeriodLength.text.toString() == ""){
+            if(binding.textInputCycleLength.text.toString().isEmpty() || binding.textInputPeriodLength.text.toString().isEmpty()){
 
                 Toast.makeText(context,
                     "Musisz wprowadzić dane",

@@ -20,11 +20,6 @@ object AppModule {
         return app as BaseApplication
     }
 
-    @Singleton
-    @Provides
-    fun provideListOfDays(): List<String>?{
-        return null
-    }
 
     @Singleton
     @Provides

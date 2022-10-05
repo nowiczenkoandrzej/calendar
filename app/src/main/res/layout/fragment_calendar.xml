@@ -6,6 +6,16 @@
     android:layout_height="match_parent"
     tools:context=".ui.MainActivity">
 
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/navigation_linear_layout"
         android:layout_width="match_parent"
@@ -58,8 +68,8 @@
     <LinearLayout
         android:id="@+id/days_of_week"
         android:layout_width="0dp"
-        android:padding="4dp"
         android:layout_height="wrap_content"
+        android:padding="4dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/navigation_linear_layout">
@@ -137,10 +147,10 @@
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layoutAnimation="@anim/layout_animation"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layoutAnimation="@anim/layout_animation"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/days_of_week">
 
@@ -148,7 +158,7 @@
             android:id="@+id/calendar_recycle_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layoutAnimation="@anim/layout_animation"/>
+            android:layoutAnimation="@anim/layout_animation" />
 
     </androidx.cardview.widget.CardView>
 
