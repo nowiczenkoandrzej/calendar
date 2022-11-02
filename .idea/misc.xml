@@ -3,14 +3,18 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/drawable/ic_baseline_calendar_first_date.xml" value="0.2615" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/drawable/ic_baseline_calendar_month_24.xml" value="0.1" />
+        <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/drawable/ic_baseline_period_day.xml" value="0.2615" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/drawable/ic_baseline_settings_24.xml" value="0.197" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/drawable/recycler_view_background.xml" value="0.1" />
+        <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/drawable/recycler_view_predicted_period.xml" value="0.16" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/layout/activity_main.xml" value="0.25" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/layout/caledar_cell.xml" value="0.33" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/layout/fragment_calendar.xml" value="0.25" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/layout/fragment_settings.xml" value="0.25" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/menu/bottom_nav_menu.xml" value="0.22" />
+        <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/menu/cell_menu.xml" value="0.36666666666666664" />
         <entry key="..\:/Users/pchmi/Desktop/Android kurs/Calendar/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.197" />
       </map>
     </option>

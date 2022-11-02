@@ -1,10 +1,11 @@
-package andrzej.calendar.room.user
+package andrzej.calendar.room
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import andrzej.calendar.room.PeriodDay
 
-@Entity(tableName = "user")
+@Entity
 data class User(
 
     @PrimaryKey(autoGenerate = false)
@@ -13,5 +14,7 @@ data class User(
 
     val periodLength: String,
 
-    val cycleLength: String
+    val cycleLength: String,
+
+    val initialDay: PeriodDay
 )

@@ -6,28 +6,22 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import android.view.animation.AnimationUtils
-import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.recyclerview.widget.GridLayoutManager
 import andrzej.calendar.R
 import andrzej.calendar.databinding.FragmentCalendarBinding
-import andrzej.calendar.room.period_days.PeriodDay
-import andrzej.calendar.utils.DataState
+import andrzej.calendar.room.PeriodDay
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 
@@ -37,9 +31,12 @@ class CalendarFragment: Fragment() {
     private var _binding: FragmentCalendarBinding? = null
     private val binding get() = _binding!!
 
+
+
     private lateinit var selectedDate: LocalDate
     private lateinit var calendarAdapter: CalendarAdapter
     private var periodDays: List<PeriodDay> = ArrayList()
+    private var predictedPeriodDays: List<PeriodDay> = ArrayList()
 
     private val viewModel: CalendarViewModel by activityViewModels()
 
@@ -58,12 +55,14 @@ class CalendarFragment: Fragment() {
         setListeners()
         setReceiver()
         subscribeCollector()
+        viewModel.getPredictedPeriodDays()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
+
 
 
     private fun setListeners(){
@@ -94,9 +93,9 @@ class CalendarFragment: Fragment() {
 
             override fun onReceive(context: Context?, intent: Intent?) {
 
-                val day = intent?.getStringExtra("day")
-                val month = intent?.getStringExtra("month")
-                val year = intent?.getStringExtra("year")
+                val day = intent?.getIntExtra("day", 10)
+                val month = intent?.getIntExtra("month", 1)
+                val year = intent?.getIntExtra("year", 2000)
                 val isMarked = intent?.getBooleanExtra("is_marked", false)
 
                 val result = PeriodDay(
@@ -120,28 +119,50 @@ class CalendarFragment: Fragment() {
     private fun subscribeCollector(){
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.days.collect() {
-                    periodDays = it.list!!
-                    setMonthView(viewModel.daysInMonthArray())
+                viewModel.days.collect {
+                    periodDays = it.periodDays!!
+                    predictedPeriodDays = it.predictedPeriodDays!!
+                    setMonthView()
+
+
                 }
             }
         }
     }
 
-    private fun setMonthView(daysInMonth: List<String>) {
+    private fun setMonthView() {
         selectedDate = viewModel.getDate()
+        val daysInMonth = daysInMonthArray()
         binding.monthTextView.text = monthYearFromDate(selectedDate)
-        calendarAdapter = CalendarAdapter(daysInMonth, periodDays, selectedDate, requireContext())
+        calendarAdapter = CalendarAdapter(daysInMonth, periodDays, predictedPeriodDays, selectedDate, requireContext())
         binding.calendarRecycleView.apply {
             layoutManager = GridLayoutManager(context, 7)
             adapter = calendarAdapter
         }
-    }
 
+    }
 
     private fun monthYearFromDate(date: LocalDate): String {
         val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
         return date.format(formatter)
+    }
+
+    private fun daysInMonthArray(): List<String> {
+        val daysInMonthArray = ArrayList<String>()
+        val yearMonth = YearMonth.from(selectedDate)
+        val daysInMonth = yearMonth.lengthOfMonth()
+        val firstOfMonth = selectedDate.withDayOfMonth(1)
+        val dayOfWeek = firstOfMonth.dayOfWeek.value
+
+        for (i in 1..42){
+            if (i < dayOfWeek || i > daysInMonth + dayOfWeek - 1){
+                daysInMonthArray.add("")
+            } else {
+                daysInMonthArray.add("${i - dayOfWeek + 1}")
+            }
+        }
+
+        return daysInMonthArray
     }
 
 

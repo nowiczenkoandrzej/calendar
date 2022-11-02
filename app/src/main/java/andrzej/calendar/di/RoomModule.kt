@@ -1,44 +1,32 @@
 package andrzej.calendar.di
 
 import android.app.Application
-import andrzej.calendar.room.period_days.PeriodDataBase
-import andrzej.calendar.room.period_days.PeriodDaysDao
-import andrzej.calendar.room.user.UserDao
-import andrzej.calendar.room.user.UserDataBase
+import andrzej.calendar.room.CalendarDao
+import andrzej.calendar.room.DataBase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
+import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.android.scopes.ViewModelScoped
+
 
 
 @Module
-@InstallIn(SingletonComponent::class)
-class RoomModule {
+@InstallIn(ViewModelComponent::class)
+object RoomModule {
 
 
-    @Singleton
+    @ViewModelScoped
     @Provides
-    fun provideUserDb(context: Application): UserDataBase {
-        return UserDataBase.getUserDB(context)
+    fun provideUserDb(context: Application): DataBase {
+        return DataBase.getUserDB(context)
     }
 
-    @Singleton
+    @ViewModelScoped
     @Provides
-    fun provideUserDao(userDataBase: UserDataBase): UserDao {
-        return userDataBase.userDao()
+    fun provideUserDao(dataBase: DataBase): CalendarDao {
+        return dataBase.userDao()
     }
 
-    @Singleton
-    @Provides
-    fun provideCalendarDB(context: Application): PeriodDataBase {
-        return PeriodDataBase.getPeriodDB(context)
-    }
-
-    @Singleton
-    @Provides
-    fun provideCalendarDao(db: PeriodDataBase): PeriodDaysDao{
-        return db.calendarDao()
-    }
 
 }

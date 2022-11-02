@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/bg_color"
     tools:context=".ui.MainActivity">
 
     <ProgressBar
@@ -26,11 +27,12 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
+
             android:id="@+id/previous_month_button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@color/bg_color"
             android:text="@string/left_arrow"
             android:textColor="@color/blue"
             android:textSize="20sp"
@@ -56,7 +58,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@color/bg_color"
             android:text="@string/right_arrow"
             android:textColor="@color/blue"
             android:textSize="20sp"
@@ -147,6 +149,7 @@
     <androidx.cardview.widget.CardView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:background="@color/bg_color"
         android:layoutAnimation="@anim/layout_animation"
         android:padding="4dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -158,6 +161,7 @@
             android:id="@+id/calendar_recycle_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:background="@color/bg_color"
             android:layoutAnimation="@anim/layout_animation" />
 
     </androidx.cardview.widget.CardView>

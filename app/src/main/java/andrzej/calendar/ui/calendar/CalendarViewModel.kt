@@ -1,53 +1,56 @@
 package andrzej.calendar.ui.calendar
 
-import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import andrzej.calendar.repository.PeriodDaysRepository
-import andrzej.calendar.room.period_days.PeriodDay
-import andrzej.calendar.utils.DataState
+import andrzej.calendar.repository.UserRepository
+import andrzej.calendar.room.PeriodDay
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.YearMonth
 import javax.inject.Inject
 
 @HiltViewModel
 class CalendarViewModel
 @Inject constructor(
         private var selectedDate: LocalDate,
-        private val repository: PeriodDaysRepository
+        private val periodDaysRepository: PeriodDaysRepository,
+        private val userRepository: UserRepository
     ): ViewModel() {
+
+
 
     private val _days = MutableStateFlow<List<PeriodDay>>(emptyList())
     private val _month = MutableStateFlow(selectedDate.monthValue)
+    private val _predictedPeriodDays = MutableStateFlow<List<PeriodDay>>(emptyList())
 
     init {
         viewModelScope.launch {
-            _days.value = repository.getDays(_month.toString(), selectedDate.year.toString())
+            _days.value = periodDaysRepository.getDays(_month.value, selectedDate.year)
         }
     }
 
-    val days = combine(_days, _month){ days, month ->
+    val days = combine(_days, _month, _predictedPeriodDays){ days, month, predictedDays ->
         DaysState(
-            repository.getDays(month.toString(), selectedDate.year.toString()),
+            periodDaysRepository.getDays(month, selectedDate.year),
+            predictedDays,
             month
         )
     }
 
-
     fun insertDay(day: PeriodDay){
+
         viewModelScope.launch {
-            repository.insertDay(day)
+            periodDaysRepository.insertDay(day)
         }
     }
 
     fun deleteDay(day: PeriodDay){
         viewModelScope.launch {
-            repository.deleteDay(day)
+            periodDaysRepository.deleteDay(day)
         }
     }
 
@@ -71,23 +74,51 @@ class CalendarViewModel
             _month.value = 1
     }
 
-    fun daysInMonthArray(): List<String> {
-        val daysInMonthArray = ArrayList<String>()
-        val yearMonth = YearMonth.from(selectedDate)
-        val daysInMonth = yearMonth.lengthOfMonth()
-        val firstOfMonth = selectedDate.withDayOfMonth(1)
-        val dayOfWeek = firstOfMonth.dayOfWeek.value
+    fun getPredictedPeriodDays() {
+        viewModelScope.launch {
+            val user = userRepository.getUser() ?: return@launch
 
-        for (i in 1..42){
-            if (i < dayOfWeek || i > daysInMonth + dayOfWeek - 1){
-                daysInMonthArray.add("")
-            } else {
-                daysInMonthArray.add("${i - dayOfWeek + 1}")
+            if(user.periodLength.isBlank() || user.cycleLength.isBlank()) return@launch
+
+            val initialDate = user.initialDay
+            val periodLength = user.periodLength.toInt()
+            val cycleLength = user.cycleLength.toInt()
+
+            val date = LocalDate.of(
+                initialDate.year,
+                initialDate.month,
+                initialDate.day
+            )
+
+            val predictionRange = (cycleLength * 3) + periodLength
+            val predictedDatesIndexes = ArrayList<Int>(periodLength * 4)
+            val tmpList = ArrayList<PeriodDay>()
+            val result = ArrayList<PeriodDay>()
+
+            for (i in 0 until predictionRange){
+                when (i) {
+                    in 0 until periodLength -> predictedDatesIndexes.add(i)
+                    in cycleLength until cycleLength + periodLength -> predictedDatesIndexes.add(i)
+                    in cycleLength * 2 until (cycleLength * 2) + periodLength -> predictedDatesIndexes.add(i)
+                    in cycleLength * 3 until (cycleLength * 3) + periodLength -> predictedDatesIndexes.add(i)
+                }
             }
+
+            generateSequence(date) { it.plusDays(1L) }
+                .take(predictionRange)
+                .map { PeriodDay(
+                    day = it.dayOfMonth,
+                    month = it.monthValue,
+                    year = it.year
+                ) }
+                .forEach { tmpList.add(it) }
+
+            for(index in predictedDatesIndexes)
+                result.add(tmpList[index])
+
+            _predictedPeriodDays.value = result
         }
-
-        return daysInMonthArray
     }
-
 }
+
 

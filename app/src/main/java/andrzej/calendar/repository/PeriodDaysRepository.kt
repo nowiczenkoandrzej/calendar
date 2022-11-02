@@ -1,20 +1,19 @@
 package andrzej.calendar.repository
 
-import android.util.Log
-import andrzej.calendar.room.period_days.PeriodDay
-import andrzej.calendar.room.period_days.PeriodDaysDao
-import andrzej.calendar.utils.DataState
-import kotlinx.coroutines.flow.Flow
-
-import kotlinx.coroutines.flow.flow
+import andrzej.calendar.room.CalendarDao
+import andrzej.calendar.room.PeriodDay
 import javax.inject.Inject
 
 class PeriodDaysRepository
 @Inject constructor(
-    private val dao: PeriodDaysDao
+    private val dao: CalendarDao
 ){
 
-    suspend fun getDays(month: String, year: String): List<PeriodDay> {
+    suspend fun getAllDays(): List<PeriodDay> {
+        return dao.getAllDays()
+    }
+
+    suspend fun getDays(month: Int, year: Int): List<PeriodDay> {
         return dao.get(month, year)
     }
 

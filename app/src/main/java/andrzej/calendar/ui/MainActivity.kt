@@ -4,7 +4,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import andrzej.calendar.R
-
 import andrzej.calendar.databinding.ActivityMainBinding
 import andrzej.calendar.ui.calendar.CalendarFragment
 import andrzej.calendar.ui.settings.SettingsFragment
@@ -44,7 +43,8 @@ class MainActivity : AppCompatActivity(){
         fragmentTransaction.commit()
 
     }
-
-
-
+    companion object {
+        const val TAG = "asd"
+    }
 }
+

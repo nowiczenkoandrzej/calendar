@@ -1,6 +1,7 @@
 package andrzej.calendar.ui.settings
 
 import android.app.Activity
+import android.app.DatePickerDialog
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -10,11 +11,11 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import andrzej.calendar.databinding.FragmentSettingsBinding
-import andrzej.calendar.room.user.User
-import andrzej.calendar.utils.DataState
+import andrzej.calendar.room.PeriodDay
+import andrzej.calendar.room.User
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 
 
 @AndroidEntryPoint
@@ -22,6 +23,12 @@ class SettingsFragment : Fragment() {
 
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
+
+    private val c = Calendar.getInstance()
+    private val year = c.get(Calendar.YEAR)
+    private val month = c.get(Calendar.MONTH)
+    private val day = c.get(Calendar.DAY_OF_MONTH)
+    private var initialDate = PeriodDay.today()
 
     private val viewModel: SettingsViewModel by viewModels()
 
@@ -48,32 +55,24 @@ class SettingsFragment : Fragment() {
     }
 
     private fun subscribeObservers() {
-        viewModel.user.observe(viewLifecycleOwner, Observer { user ->
-            when(user){
-                is DataState.Success<User> -> {
-                    displayProgressBar(false)
-                    displayUserData(user.data)
-                }
-                is DataState.Error -> {
-                    displayProgressBar(false)
-                    displayMessage()
-                }
-                is DataState.Loading -> {
-                    displayProgressBar(true)
-                }
-                else -> {}
-            }
-        })
-    }
+        viewModel.user.observe(viewLifecycleOwner) { user ->
+            if (user == null)
+                displayMessage()
+            else
+                displayUserData(user)
+        }
 
-
-    private fun displayProgressBar(isDisplayed: Boolean){
-        binding.progressBar.visibility = if(isDisplayed) View.VISIBLE else View.GONE
+        viewModel.averageData.observe(viewLifecycleOwner) { data ->
+            binding.textInputAveragePeriodLength.setText(String.format("%.2f", data.periodLength))
+            binding.textInputAverageCycleLength.setText(String.format("%.2f", data.cycleLength))
+            viewModel.updateInitialDate(data.lastPeriod)
+        }
     }
 
     private fun displayUserData(user: User){
         binding.textInputPeriodLength.setText(user.periodLength)
         binding.textInputCycleLength.setText(user.cycleLength)
+        binding.initialDate.text = user.initialDay.toString()
     }
 
     private fun displayMessage(){
@@ -85,30 +84,43 @@ class SettingsFragment : Fragment() {
 
     private fun setListener(){
         binding.buttonSave.setOnClickListener {
+            saveData()
+        }
 
-            if(binding.textInputCycleLength.text.toString().isEmpty() || binding.textInputPeriodLength.text.toString().isEmpty()){
+        binding.pickInitialDate.setOnClickListener {
+            pickDate()
+        }
 
-                Toast.makeText(context,
-                    "Musisz wprowadzić dane",
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@setOnClickListener
+    }
 
-            } else {
+    private fun saveData(){
+        if(
+            binding.textInputCycleLength.text.toString().isEmpty() ||
+            binding.textInputPeriodLength.text.toString().isEmpty() ||
+            binding.initialDate.text.toString().isEmpty()
+        ){
+            Toast.makeText(context,
+                "Musisz wprowadzić dane",
+                Toast.LENGTH_SHORT
+            ).show()
+            return
 
-                viewModel.saveUser(User(
-                    userId = 1,
-                    periodLength = binding.textInputPeriodLength.text.toString(),
-                    cycleLength = binding.textInputCycleLength.text.toString()
-                ))
+        } else {
 
-                Toast.makeText(context,
-                    "Zapisano dane",
-                    Toast.LENGTH_SHORT
-                ).show()
-                hideKeyboard(activity)
-            }
+            viewModel.saveUser(
+                User(
+                userId = 1,
+                periodLength = binding.textInputPeriodLength.text.toString(),
+                cycleLength = binding.textInputCycleLength.text.toString(),
+                initialDay = initialDate
+            )
+            )
 
+            Toast.makeText(context,
+                "Zapisano dane",
+                Toast.LENGTH_SHORT
+            ).show()
+            hideKeyboard(activity)
         }
     }
 
@@ -121,6 +133,22 @@ class SettingsFragment : Fragment() {
         if(view == null)
             view = View(activity)
         imm.hideSoftInputFromWindow(view.windowToken, 0)
+
+    }
+
+    private fun pickDate(){
+        DatePickerDialog(
+            requireContext(),
+            { _, mYear, mMonth, mDay ->
+                binding.initialDate.text = "$mDay-${mMonth+1}-$mYear"
+
+                val newMonth = mMonth + 1
+                initialDate = PeriodDay(
+                    day = mDay,
+                    month = newMonth,
+                    year = mYear
+                )
+            }, year, month,day).show()
 
     }
 

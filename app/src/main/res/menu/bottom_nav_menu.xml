@@ -3,12 +3,12 @@
 
     <item
         android:id="@+id/calendar"
-        android:title="Calendar"
+        android:title="Kalendarz"
         android:icon="@drawable/ic_baseline_calendar_month_24"/>
 
     <item
         android:id="@+id/settings"
-        android:title="Settings"
+        android:title="Ustawienia"
         android:icon="@drawable/ic_baseline_settings_24"/>
 
 </menu>

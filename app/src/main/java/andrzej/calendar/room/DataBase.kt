@@ -1,24 +1,23 @@
-package andrzej.calendar.room.user
+package andrzej.calendar.room
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
+import androidx.room.*
 
-@Database(entities = [User::class], version = 2)
-abstract class UserDataBase: RoomDatabase() {
+@Database(entities = [User::class, PeriodDay::class], version = 6)
+@TypeConverters(DateConverter::class)
+abstract class DataBase: RoomDatabase() {
 
-    abstract fun userDao(): UserDao
+    abstract fun userDao(): CalendarDao
 
     companion object{
 
-        private var dbInstance: UserDataBase? = null
+        private var dbInstance: DataBase? = null
 
-        fun getUserDB(context: Context): UserDataBase {
+        fun getUserDB(context: Context): DataBase {
             if (dbInstance == null){
                 dbInstance = Room.databaseBuilder(
                     context.applicationContext,
-                    UserDataBase::class.java,
+                    DataBase::class.java,
                     "user_database"
                 )
                     .allowMainThreadQueries()
