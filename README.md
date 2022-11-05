@@ -103,3 +103,60 @@ abstract class DataBase: RoomDatabase() {
 [Source code](https://github.com/nowiczenkoandrzej/calendar/blob/master/app/src/main/java/andrzej/calendar/room/DataBase.kt)
 &nbsp;
 
+## Hilt
+
+App is built using **dependency injection** pattern via **Hilt** library.
+App has **RoomModule** object for creating _calendarDao_ and _Database_ objects.
+Both dependencies are scoped to ViewModel lifecycles.
+```kotlin
+@Module
+@InstallIn(ViewModelComponent::class)
+object RoomModule {
+
+    @ViewModelScoped
+    @Provides
+    fun provideUserDb(context: Application): DataBase {
+        return DataBase.getUserDB(context)
+    }
+
+    @ViewModelScoped
+    @Provides
+    fun provideUserDao(dataBase: DataBase): CalendarDao {
+        return dataBase.userDao()
+    }
+}
+```
+[Source code](https://github.com/nowiczenkoandrzej/calendar/blob/master/app/src/main/java/andrzej/calendar/di/RoomModule.kt)
+&nbsp;
+
+
+## Design patterns
+
+### Singleton
+Beside **dependency injection** there is also  one **singleton** used in app. It is single **RoomDataBase** instance.
+```kotlin
+companion object{
+
+        private var dbInstance: DataBase? = null
+
+        fun getUserDB(context: Context): DataBase {
+            if (dbInstance == null){
+                dbInstance = Room.databaseBuilder(
+                    context.applicationContext,
+                    DataBase::class.java,
+                    "user_database"
+                )
+                    .allowMainThreadQueries()
+                    .fallbackToDestructiveMigration()
+                    .build()
+            }
+            return dbInstance!!
+        }
+    }
+```
+[Source code](https://github.com/nowiczenkoandrzej/calendar/blob/master/app/src/main/java/andrzej/calendar/room/DataBase.kt)
+&nbsp;
+
+
+
+
